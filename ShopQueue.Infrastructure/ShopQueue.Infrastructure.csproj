@@ -16,4 +16,9 @@
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ShopQueue.Application\ShopQueue.Application.csproj" />
+      <ProjectReference Include="..\ShopQueue.Domain\ShopQueue.Domain.csproj" />
+    </ItemGroup>
+
 </Project>
