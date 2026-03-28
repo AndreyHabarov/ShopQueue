@@ -1,6 +1,9 @@
 ﻿namespace ShopQueue.Application.Messages;
 
-public class ClientJoinedQueue
-{
-    
-}
+public record ClientJoinedQueue(
+    Guid QueueEntryId,
+    Guid QueueId,
+    Guid CustomerId,
+    int Position,
+    DateTime JoinedAt
+);
