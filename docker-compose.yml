@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: shopqueue-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shopqueue
+      POSTGRES_USER: shopqueue
+      POSTGRES_PASSWORD: shopqueue
+    ports:
+      - '5435:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: shopqueue-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: shopqueue
+      RABBITMQ_DEFAULT_PASS: shopqueue
+    ports:
+      - '5672:5672' # AMQP (приложение)
+      - '15672:15672' # Web UI (браузер)
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
