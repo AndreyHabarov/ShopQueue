@@ -19,7 +19,7 @@ public class CustomerService(AppDbContext db) : ICustomerService
 
         db.Customers.Add(customer);
 
-        var postion = await db.QueueEntries
+        var position = await db.QueueEntries
             .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
             .CountAsync() + 1;
 
@@ -28,7 +28,7 @@ public class CustomerService(AppDbContext db) : ICustomerService
             Id = Guid.NewGuid(),
             QueueId = queueId,
             CustomerId = customer.Id,
-            Position = postion,
+            Position = position,
             Status = QueueEntryStatus.Waiting,
             JoinedAt = DateTime.UtcNow
         };
