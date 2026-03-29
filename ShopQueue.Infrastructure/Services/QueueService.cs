@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using ShopQueue.Application.Messages;
 using ShopQueue.Application.Services;
 using ShopQueue.Domain.Entities;
 using ShopQueue.Domain.Enums;
@@ -6,7 +8,7 @@ using ShopQueue.Infrastructure.Persistence;
 
 namespace ShopQueue.Infrastructure.Services;
 
-public class QueueService(AppDbContext db) : IQueueService
+public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint) : IQueueService
 {
     public async Task<Queue> CreateAsync(Guid shopId, string name)
     {
@@ -47,6 +49,15 @@ public class QueueService(AppDbContext db) : IQueueService
         next.CalledAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync();
+
+        await publishEndpoint.Publish(new ClientCalled(
+            next.Id,
+            next.QueueId,
+            next.CustomerId,
+            next.Position,
+            next.CalledAt!.Value
+        ));
+
         return next;
     }
 }

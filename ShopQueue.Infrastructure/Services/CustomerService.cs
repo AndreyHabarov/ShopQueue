@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using ShopQueue.Application.Messages;
 using ShopQueue.Application.Services;
 using ShopQueue.Domain.Entities;
 using ShopQueue.Domain.Enums;
@@ -6,7 +8,7 @@ using ShopQueue.Infrastructure.Persistence;
 
 namespace ShopQueue.Infrastructure.Services;
 
-public class CustomerService(AppDbContext db) : ICustomerService
+public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint) : ICustomerService
 {
     public async Task<QueueEntry> JoinQueueAsync(Guid queueId, string customerName, string customerPhone)
     {
@@ -35,6 +37,15 @@ public class CustomerService(AppDbContext db) : ICustomerService
 
         db.QueueEntries.Add(entry);
         await db.SaveChangesAsync();
+
+        await publishEndpoint.Publish(new ClientJoinedQueue(
+            entry.Id,
+            entry.QueueId,
+            entry.CustomerId,
+            entry.Position,
+            entry.JoinedAt
+        ));
+
         return entry;
     }
 }
