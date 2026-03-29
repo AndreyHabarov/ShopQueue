@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ShopQueue.Application.Exceptions;
 using ShopQueue.Application.Messages;
 using ShopQueue.Application.Services;
@@ -9,13 +10,15 @@ using ShopQueue.Infrastructure.Persistence;
 
 namespace ShopQueue.Infrastructure.Services;
 
-public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint) : IQueueService
+public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint, ILogger<QueueService> logger)
+    : IQueueService
 {
     public async Task<Queue> CreateAsync(Guid shopId, string name)
     {
         var shop = await db.Shops.FindAsync(shopId);
         if (shop is null)
         {
+            logger.LogWarning("Shop not found. ShopId = {ShopId}", shopId);
             throw new NotFoundException($"Shop with id {shopId} not found");
         }
 
@@ -30,6 +33,7 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint) : I
 
         db.Queues.Add(queue);
         await db.SaveChangesAsync();
+        logger.LogInformation("Queue created. QueueId={QueueId}, ShopId={ShopId}, Name={Name}", queue.Id, shopId, name);
         return queue;
     }
 
@@ -55,14 +59,17 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint) : I
         {
             throw new NotFoundException($"Queue with id {queueId} not found");
         }
-        
+
         var next = await db.QueueEntries
             .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
             .OrderBy(e => e.Position)
             .FirstOrDefaultAsync();
 
         if (next is null)
+        {
+            logger.LogWarning("Call next failed - queue is empty. QueueId = {QueueId}", queueId);
             throw new BusinessException("Queue is empty");
+        }
 
         next.Status = QueueEntryStatus.Called;
         next.CalledAt = DateTime.UtcNow;
@@ -76,6 +83,9 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint) : I
             next.Position,
             next.CalledAt!.Value
         ));
+
+        logger.LogInformation("Customer called. EntryId = {EntryId}, QueueId = {QueueId}, Position = {Position}",
+            next.Id, queueId, next.Position);
 
         return next;
     }

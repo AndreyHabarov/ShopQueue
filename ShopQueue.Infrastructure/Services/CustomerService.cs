@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using ShopQueue.Application.Exceptions;
 using ShopQueue.Application.Messages;
 using ShopQueue.Application.Services;
@@ -9,13 +10,15 @@ using ShopQueue.Infrastructure.Persistence;
 
 namespace ShopQueue.Infrastructure.Services;
 
-public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint) : ICustomerService
+public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint, ILogger<CustomerService> logger)
+    : ICustomerService
 {
     public async Task<QueueEntry> JoinQueueAsync(Guid queueId, string customerName, string customerPhone)
     {
         var queue = await db.Queues.FindAsync(queueId);
         if (queue is null)
         {
+            logger.LogWarning("Queue not found. QueueId={QueueId}", queueId);
             throw new NotFoundException($"Queue with id {queueId} not found");
         }
 
@@ -52,6 +55,9 @@ public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint) 
             entry.Position,
             entry.JoinedAt
         ));
+
+        logger.LogInformation("Customer joined queue. EntryId = {EntryId}, QueueId = {QueueId}, Position = {Position}",
+            entry.Id, queueId, entry.Position);
 
         return entry;
     }
