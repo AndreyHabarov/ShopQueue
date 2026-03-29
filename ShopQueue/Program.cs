@@ -2,6 +2,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using ShopQueue.Application.Services;
 using ShopQueue.Infrastructure.Consumers;
 using ShopQueue.Infrastructure.Persistence;
@@ -11,6 +12,7 @@ using ShopQueue.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -41,6 +43,8 @@ builder.Services.AddMassTransit(x =>
 
 var app = builder.Build();
 
+app.MapOpenApi();
+app.MapScalarApiReference();
 app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
 
