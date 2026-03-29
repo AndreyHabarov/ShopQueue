@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShopQueue.Application.Services;
 using ShopQueue.Requests;
+using ShopQueue.Responses;
 
 namespace ShopQueue.Controllers;
 
@@ -12,6 +13,6 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     public async Task<IActionResult> JoinQueue(Guid queueId, [FromBody] JoinQueueRequest request)
     {
         var entry = await customerService.JoinQueueAsync(queueId, request.CustomerName, request.CustomerPhone);
-        return Ok(entry);
+        return Ok(QueueEntryResponse.FromEntity(entry, request.CustomerName));
     }
 }

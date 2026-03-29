@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShopQueue.Application.Services;
 using ShopQueue.Requests;
+using ShopQueue.Responses;
 
 namespace ShopQueue.Controllers;
 
@@ -12,13 +13,13 @@ public class ShopsController(IShopService shopService, IQueueService queueServic
     public async Task<IActionResult> CreateShop([FromBody] CreateShopRequest request)
     {
         var shop = await shopService.CreateAsync(request.Name, request.Address);
-        return Ok(shop);
+        return Ok(ShopResponse.FromEntity(shop));
     }
 
     [HttpPost("{shopId}/queues")]
     public async Task<IActionResult> CreateQueue(Guid shopId, [FromBody] CreateQueueRequest request)
     {
         var queue = await queueService.CreateAsync(shopId, request.Name);
-        return Ok(queue);
+        return Ok(QueueResponse.FromEntity(queue));
     }
 }
