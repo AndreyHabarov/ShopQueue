@@ -4,6 +4,7 @@ using ShopQueue.Application.Services;
 using ShopQueue.Infrastructure.Consumers;
 using ShopQueue.Infrastructure.Persistence;
 using ShopQueue.Infrastructure.Services;
+using ShopQueue.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ builder.Services.AddMassTransit(x =>
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
 app.MapControllers();
 
 app.Run();
