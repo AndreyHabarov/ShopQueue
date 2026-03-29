@@ -21,7 +21,7 @@ public class ExceptionMiddleware(RequestDelegate next)
         }
         catch (Exception ex)
         {
-            await WriteProblem(context, StatusCodes.Status500InternalServerError, ex.Message);
+            await WriteProblem(context, StatusCodes.Status500InternalServerError, "Internal server error");
         }
     }
 

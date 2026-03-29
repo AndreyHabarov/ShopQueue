@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using ShopQueue.Application.Exceptions;
 using ShopQueue.Application.Messages;
 using ShopQueue.Application.Services;
 using ShopQueue.Domain.Entities;
@@ -12,6 +13,12 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint) : I
 {
     public async Task<Queue> CreateAsync(Guid shopId, string name)
     {
+        var shop = await db.Shops.FindAsync(shopId);
+        if (shop is null)
+        {
+            throw new NotFoundException($"Shop with id {shopId} not found");
+        }
+
         var queue = new Queue
         {
             Id = Guid.NewGuid(),
@@ -28,6 +35,12 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint) : I
 
     public async Task<List<QueueEntry>> GetEntriesAsync(Guid queueId)
     {
+        var queue = await db.Queues.FindAsync(queueId);
+        if (queue is null)
+        {
+            throw new NotFoundException($"Queue with id {queueId} not found");
+        }
+
         return await db.QueueEntries
             .Include(e => e.Customer)
             .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
@@ -37,13 +50,19 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint) : I
 
     public async Task<QueueEntry> CallNextAsync(Guid queueId)
     {
+        var queue = await db.Queues.FindAsync(queueId);
+        if (queue is null)
+        {
+            throw new NotFoundException($"Queue with id {queueId} not found");
+        }
+        
         var next = await db.QueueEntries
             .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
             .OrderBy(e => e.Position)
             .FirstOrDefaultAsync();
 
         if (next is null)
-            throw new InvalidOperationException("Queue is empty");
+            throw new BusinessException("Queue is empty");
 
         next.Status = QueueEntryStatus.Called;
         next.CalledAt = DateTime.UtcNow;

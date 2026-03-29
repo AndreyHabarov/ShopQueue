@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using ShopQueue.Application.Exceptions;
 using ShopQueue.Application.Messages;
 using ShopQueue.Application.Services;
 using ShopQueue.Domain.Entities;
@@ -12,6 +13,12 @@ public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint) 
 {
     public async Task<QueueEntry> JoinQueueAsync(Guid queueId, string customerName, string customerPhone)
     {
+        var queue = await db.Queues.FindAsync(queueId);
+        if (queue is null)
+        {
+            throw new NotFoundException($"Queue with id {queueId} not found");
+        }
+
         var customer = new Customer
         {
             Id = Guid.NewGuid(),
