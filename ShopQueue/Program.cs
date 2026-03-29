@@ -1,11 +1,40 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using ShopQueue.Application.Services;
+using ShopQueue.Infrastructure.Consumers;
 using ShopQueue.Infrastructure.Persistence;
+using ShopQueue.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IShopService, ShopService>();
+builder.Services.AddScoped<IQueueService, QueueService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<ClientJoinedQueueConsumer>();
+    x.AddConsumer<ClientCalledConsumer>();
+
+    x.UsingRabbitMq((context, configuration) =>
+    {
+        configuration.Host("localhost", "/", h =>
+        {
+            h.Username("shopqueue");
+            h.Password("shopqueue");
+        });
+
+        configuration.ConfigureEndpoints(context);
+    });
+});
+
 var app = builder.Build();
+
+app.MapControllers();
 
 app.Run();

@@ -1,0 +1,24 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using ShopQueue.Application.Services;
+using ShopQueue.Requests;
+
+namespace ShopQueue.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ShopsController(IShopService shopService, IQueueService queueService) : ControllerBase
+{
+    [HttpPost]
+    public async Task<IActionResult> CreateShop([FromBody] CreateShopRequest request)
+    {
+        var shop = await shopService.CreateAsync(request.Name, request.Address);
+        return Ok(shop);
+    }
+
+    [HttpPost("{shopId}/queues")]
+    public async Task<IActionResult> CreateQueue(Guid shopId, [FromBody] CreateQueueRequest request)
+    {
+        var queue = await queueService.CreateAsync(shopId, request.Name);
+        return Ok(queue);
+    }
+}
