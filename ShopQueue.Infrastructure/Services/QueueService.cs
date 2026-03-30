@@ -13,9 +13,9 @@ namespace ShopQueue.Infrastructure.Services;
 public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint, ILogger<QueueService> logger)
     : IQueueService
 {
-    public async Task<Queue> CreateAsync(Guid shopId, string name)
+    public async Task<Queue> CreateAsync(Guid shopId, string name, CancellationToken cancellationToken = default)
     {
-        var shop = await db.Shops.FindAsync(shopId);
+        var shop = await db.Shops.FindAsync([shopId], cancellationToken);
         if (shop is null)
         {
             logger.LogWarning("Shop not found. ShopId = {ShopId}", shopId);
@@ -32,14 +32,14 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint, ILo
         };
 
         db.Queues.Add(queue);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Queue created. QueueId={QueueId}, ShopId={ShopId}, Name={Name}", queue.Id, shopId, name);
         return queue;
     }
 
-    public async Task<List<QueueEntry>> GetEntriesAsync(Guid queueId)
+    public async Task<List<QueueEntry>> GetEntriesAsync(Guid queueId, CancellationToken cancellationToken = default)
     {
-        var queue = await db.Queues.FindAsync(queueId);
+        var queue = await db.Queues.FindAsync([queueId], cancellationToken);
         if (queue is null)
         {
             throw new NotFoundException($"Queue with id {queueId} not found");
@@ -49,12 +49,12 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint, ILo
             .Include(e => e.Customer)
             .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
             .OrderBy(e => e.Position)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<QueueEntry> CallNextAsync(Guid queueId)
+    public async Task<QueueEntry> CallNextAsync(Guid queueId, CancellationToken cancellationToken = default)
     {
-        var queue = await db.Queues.FindAsync(queueId);
+        var queue = await db.Queues.FindAsync([queueId], cancellationToken);
         if (queue is null)
         {
             throw new NotFoundException($"Queue with id {queueId} not found");
@@ -63,7 +63,7 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint, ILo
         var next = await db.QueueEntries
             .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
             .OrderBy(e => e.Position)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (next is null)
         {
@@ -74,7 +74,7 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint, ILo
         next.Status = QueueEntryStatus.Called;
         next.CalledAt = DateTime.UtcNow;
 
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(cancellationToken);
 
         await publishEndpoint.Publish(new ClientCalled(
             next.Id,

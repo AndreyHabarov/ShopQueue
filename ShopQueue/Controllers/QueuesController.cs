@@ -9,16 +9,16 @@ namespace ShopQueue.Controllers;
 public class QueuesController(IQueueService queueService) : ControllerBase
 {
     [HttpGet("{queueId}")]
-    public async Task<IActionResult> GetQueue(Guid queueId)
+    public async Task<IActionResult> GetQueue(Guid queueId, CancellationToken cancellationToken)
     {
-        var entries = await queueService.GetEntriesAsync(queueId);
+        var entries = await queueService.GetEntriesAsync(queueId, cancellationToken);
         return Ok(entries.Select(x => QueueEntryResponse.FromEntity(x)));
     }
 
     [HttpPost("{queueId}/call-next")]
-    public async Task<IActionResult> CallNext(Guid queueId)
+    public async Task<IActionResult> CallNext(Guid queueId, CancellationToken cancellationToken)
     {
-        var entry = await queueService.CallNextAsync(queueId);
+        var entry = await queueService.CallNextAsync(queueId, cancellationToken);
         return Ok(QueueEntryResponse.FromEntity(entry));
     }
 }

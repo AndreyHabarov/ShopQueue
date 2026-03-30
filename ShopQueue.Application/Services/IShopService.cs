@@ -4,5 +4,5 @@ namespace ShopQueue.Application.Services;
 
 public interface IShopService
 {
-    Task<Shop> CreateAsync(string name, string address);
+    Task<Shop> CreateAsync(string name, string address, CancellationToken cancellationToken = default);
 }

@@ -13,9 +13,10 @@ namespace ShopQueue.Infrastructure.Services;
 public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint, ILogger<CustomerService> logger)
     : ICustomerService
 {
-    public async Task<QueueEntry> JoinQueueAsync(Guid queueId, string customerName, string customerPhone)
+    public async Task<QueueEntry> JoinQueueAsync(Guid queueId, string customerName, string customerPhone,
+        CancellationToken cancellationToken = default)
     {
-        var queue = await db.Queues.FindAsync(queueId);
+        var queue = await db.Queues.FindAsync([queueId], cancellationToken);
         if (queue is null)
         {
             logger.LogWarning("Queue not found. QueueId={QueueId}", queueId);
@@ -33,7 +34,7 @@ public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint, 
 
         var position = await db.QueueEntries
             .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
-            .CountAsync() + 1;
+            .CountAsync(cancellationToken) + 1;
 
         var entry = new QueueEntry
         {
@@ -46,7 +47,7 @@ public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint, 
         };
 
         db.QueueEntries.Add(entry);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(cancellationToken);
 
         await publishEndpoint.Publish(new ClientJoinedQueue(
             entry.Id,

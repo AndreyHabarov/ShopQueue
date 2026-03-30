@@ -10,16 +10,17 @@ namespace ShopQueue.Controllers;
 public class ShopsController(IShopService shopService, IQueueService queueService) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> CreateShop([FromBody] CreateShopRequest request)
+    public async Task<IActionResult> CreateShop([FromBody] CreateShopRequest request,
+        CancellationToken cancellationToken)
     {
-        var shop = await shopService.CreateAsync(request.Name, request.Address);
+        var shop = await shopService.CreateAsync(request.Name, request.Address, cancellationToken);
         return Ok(ShopResponse.FromEntity(shop));
     }
 
     [HttpPost("{shopId}/queues")]
-    public async Task<IActionResult> CreateQueue(Guid shopId, [FromBody] CreateQueueRequest request)
+    public async Task<IActionResult> CreateQueue(Guid shopId, [FromBody] CreateQueueRequest request, CancellationToken cancellationToken)
     {
-        var queue = await queueService.CreateAsync(shopId, request.Name);
+        var queue = await queueService.CreateAsync(shopId, request.Name, cancellationToken);
         return Ok(QueueResponse.FromEntity(queue));
     }
 }

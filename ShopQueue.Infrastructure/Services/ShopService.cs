@@ -6,7 +6,7 @@ namespace ShopQueue.Infrastructure.Services;
 
 public class ShopService(AppDbContext db) : IShopService
 {
-    public async Task<Shop> CreateAsync(string name, string address)
+    public async Task<Shop> CreateAsync(string name, string address, CancellationToken cancellationToken = default)
     {
         var shop = new Shop
         {
@@ -17,7 +17,7 @@ public class ShopService(AppDbContext db) : IShopService
         };
 
         db.Shops.Add(shop);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(cancellationToken);
         return shop;
     }
 }
