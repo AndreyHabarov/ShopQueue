@@ -1,22 +1,26 @@
-﻿using MassTransit;
-using Microsoft.EntityFrameworkCore;
+using MassTransit;
 using Microsoft.Extensions.Logging;
 using ShopQueue.Application.Exceptions;
 using ShopQueue.Application.Messages;
+using ShopQueue.Application.Repositories;
 using ShopQueue.Application.Services;
 using ShopQueue.Domain.Entities;
 using ShopQueue.Domain.Enums;
-using ShopQueue.Infrastructure.Persistence;
 
 namespace ShopQueue.Infrastructure.Services;
 
-public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint, ILogger<CustomerService> logger)
-    : ICustomerService
+public class CustomerService(
+    ICustomerRepository customerRepository,
+    IQueueRepository queueRepository,
+    IQueueEntryRepository queueEntryRepository,
+    IUnitOfWork unitOfWork,
+    IPublishEndpoint publishEndpoint,
+    ILogger<CustomerService> logger) : ICustomerService
 {
     public async Task<QueueEntry> JoinQueueAsync(Guid queueId, string customerName, string customerPhone,
         CancellationToken cancellationToken = default)
     {
-        var queue = await db.Queues.FindAsync([queueId], cancellationToken);
+        var queue = await queueRepository.GetByIdAsync(queueId, cancellationToken);
         if (queue is null)
         {
             logger.LogWarning("Queue not found. QueueId={QueueId}", queueId);
@@ -30,11 +34,9 @@ public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint, 
             Phone = customerPhone
         };
 
-        db.Customers.Add(customer);
+        await customerRepository.AddAsync(customer, cancellationToken);
 
-        var position = await db.QueueEntries
-            .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
-            .CountAsync(cancellationToken) + 1;
+        var position = await queueEntryRepository.CountWaitingAsync(queueId, cancellationToken) + 1;
 
         var entry = new QueueEntry
         {
@@ -46,18 +48,13 @@ public class CustomerService(AppDbContext db, IPublishEndpoint publishEndpoint, 
             JoinedAt = DateTime.UtcNow
         };
 
-        db.QueueEntries.Add(entry);
-        await db.SaveChangesAsync(cancellationToken);
+        await queueEntryRepository.AddAsync(entry, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await publishEndpoint.Publish(new ClientJoinedQueue(
-            entry.Id,
-            entry.QueueId,
-            entry.CustomerId,
-            entry.Position,
-            entry.JoinedAt
-        ));
+            entry.Id, entry.QueueId, entry.CustomerId, entry.Position, entry.JoinedAt), cancellationToken);
 
-        logger.LogInformation("Customer joined queue. EntryId = {EntryId}, QueueId = {QueueId}, Position = {Position}",
+        logger.LogInformation("Customer joined queue. EntryId={EntryId}, QueueId={QueueId}, Position={Position}",
             entry.Id, queueId, entry.Position);
 
         return entry;

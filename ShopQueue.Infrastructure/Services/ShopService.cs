@@ -1,10 +1,10 @@
-﻿using ShopQueue.Application.Services;
+using ShopQueue.Application.Repositories;
+using ShopQueue.Application.Services;
 using ShopQueue.Domain.Entities;
-using ShopQueue.Infrastructure.Persistence;
 
 namespace ShopQueue.Infrastructure.Services;
 
-public class ShopService(AppDbContext db) : IShopService
+public class ShopService(IShopRepository shopRepository, IUnitOfWork unitOfWork) : IShopService
 {
     public async Task<Shop> CreateAsync(string name, string address, CancellationToken cancellationToken = default)
     {
@@ -16,8 +16,8 @@ public class ShopService(AppDbContext db) : IShopService
             CreatedAt = DateTime.UtcNow
         };
 
-        db.Shops.Add(shop);
-        await db.SaveChangesAsync(cancellationToken);
+        await shopRepository.AddAsync(shop, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         return shop;
     }
 }

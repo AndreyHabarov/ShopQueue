@@ -1,24 +1,28 @@
-﻿using MassTransit;
-using Microsoft.EntityFrameworkCore;
+using MassTransit;
 using Microsoft.Extensions.Logging;
 using ShopQueue.Application.Exceptions;
 using ShopQueue.Application.Messages;
+using ShopQueue.Application.Repositories;
 using ShopQueue.Application.Services;
 using ShopQueue.Domain.Entities;
 using ShopQueue.Domain.Enums;
-using ShopQueue.Infrastructure.Persistence;
 
 namespace ShopQueue.Infrastructure.Services;
 
-public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint, ILogger<QueueService> logger)
-    : IQueueService
+public class QueueService(
+    IShopRepository shopRepository,
+    IQueueRepository queueRepository,
+    IQueueEntryRepository queueEntryRepository,
+    IUnitOfWork unitOfWork,
+    IPublishEndpoint publishEndpoint,
+    ILogger<QueueService> logger) : IQueueService
 {
     public async Task<Queue> CreateAsync(Guid shopId, string name, CancellationToken cancellationToken = default)
     {
-        var shop = await db.Shops.FindAsync([shopId], cancellationToken);
+        var shop = await shopRepository.GetByIdAsync(shopId, cancellationToken);
         if (shop is null)
         {
-            logger.LogWarning("Shop not found. ShopId = {ShopId}", shopId);
+            logger.LogWarning("Shop not found. ShopId={ShopId}", shopId);
             throw new NotFoundException($"Shop with id {shopId} not found");
         }
 
@@ -31,60 +35,43 @@ public class QueueService(AppDbContext db, IPublishEndpoint publishEndpoint, ILo
             CreatedAt = DateTime.UtcNow
         };
 
-        db.Queues.Add(queue);
-        await db.SaveChangesAsync(cancellationToken);
+        await queueRepository.AddAsync(queue, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Queue created. QueueId={QueueId}, ShopId={ShopId}, Name={Name}", queue.Id, shopId, name);
         return queue;
     }
 
     public async Task<List<QueueEntry>> GetEntriesAsync(Guid queueId, CancellationToken cancellationToken = default)
     {
-        var queue = await db.Queues.FindAsync([queueId], cancellationToken);
+        var queue = await queueRepository.GetByIdAsync(queueId, cancellationToken);
         if (queue is null)
-        {
             throw new NotFoundException($"Queue with id {queueId} not found");
-        }
 
-        return await db.QueueEntries
-            .Include(e => e.Customer)
-            .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
-            .OrderBy(e => e.Position)
-            .ToListAsync(cancellationToken);
+        return await queueEntryRepository.GetWaitingAsync(queueId, cancellationToken);
     }
 
     public async Task<QueueEntry> CallNextAsync(Guid queueId, CancellationToken cancellationToken = default)
     {
-        var queue = await db.Queues.FindAsync([queueId], cancellationToken);
+        var queue = await queueRepository.GetByIdAsync(queueId, cancellationToken);
         if (queue is null)
-        {
             throw new NotFoundException($"Queue with id {queueId} not found");
-        }
 
-        var next = await db.QueueEntries
-            .Where(e => e.QueueId == queueId && e.Status == QueueEntryStatus.Waiting)
-            .OrderBy(e => e.Position)
-            .FirstOrDefaultAsync(cancellationToken);
-
+        var next = await queueEntryRepository.GetNextWaitingAsync(queueId, cancellationToken);
         if (next is null)
         {
-            logger.LogWarning("Call next failed - queue is empty. QueueId = {QueueId}", queueId);
+            logger.LogWarning("Call next failed - queue is empty. QueueId={QueueId}", queueId);
             throw new BusinessException("Queue is empty");
         }
 
         next.Status = QueueEntryStatus.Called;
         next.CalledAt = DateTime.UtcNow;
 
-        await db.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await publishEndpoint.Publish(new ClientCalled(
-            next.Id,
-            next.QueueId,
-            next.CustomerId,
-            next.Position,
-            next.CalledAt!.Value
-        ));
+            next.Id, next.QueueId, next.CustomerId, next.Position, next.CalledAt!.Value), cancellationToken);
 
-        logger.LogInformation("Customer called. EntryId = {EntryId}, QueueId = {QueueId}, Position = {Position}",
+        logger.LogInformation("Customer called. EntryId={EntryId}, QueueId={QueueId}, Position={Position}",
             next.Id, queueId, next.Position);
 
         return next;

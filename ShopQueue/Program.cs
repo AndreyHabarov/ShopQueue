@@ -3,9 +3,11 @@ using FluentValidation.AspNetCore;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using ShopQueue.Application.Repositories;
 using ShopQueue.Application.Services;
 using ShopQueue.Infrastructure.Consumers;
 using ShopQueue.Infrastructure.Persistence;
+using ShopQueue.Infrastructure.Repositories;
 using ShopQueue.Infrastructure.Services;
 using ShopQueue.Middleware;
 
@@ -20,6 +22,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IShopService, ShopService>();
 builder.Services.AddScoped<IQueueService, QueueService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+
+builder.Services.AddScoped<IShopRepository, ShopRepository>();
+builder.Services.AddScoped<IQueueRepository, QueueRepository>();
+builder.Services.AddScoped<IQueueEntryRepository, QueueEntryRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
