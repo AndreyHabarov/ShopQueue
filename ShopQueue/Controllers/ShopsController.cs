@@ -14,13 +14,13 @@ public class ShopsController(IShopService shopService, IQueueService queueServic
         CancellationToken cancellationToken)
     {
         var shop = await shopService.CreateAsync(request.Name, request.Address, cancellationToken);
-        return Ok(ShopResponse.FromEntity(shop));
+        return CreatedAtAction(nameof(CreateShop), new {id = shop.Id}, ShopResponse.FromEntity(shop));
     }
 
     [HttpPost("{shopId}/queues")]
     public async Task<IActionResult> CreateQueue(Guid shopId, [FromBody] CreateQueueRequest request, CancellationToken cancellationToken)
     {
         var queue = await queueService.CreateAsync(shopId, request.Name, cancellationToken);
-        return Ok(QueueResponse.FromEntity(queue));
+        return CreatedAtAction(nameof(CreateQueue), new { shopId, id = queue.Id},QueueResponse.FromEntity(queue));
     }
 }

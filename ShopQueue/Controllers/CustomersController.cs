@@ -14,6 +14,6 @@ public class CustomersController(ICustomerService customerService) : ControllerB
         CancellationToken cancellationToken)
     {
         var entry = await customerService.JoinQueueAsync(queueId, request.CustomerName, request.CustomerPhone, cancellationToken);
-        return Ok(QueueEntryResponse.FromEntity(entry, request.CustomerName));
+        return CreatedAtAction(nameof(JoinQueue), new {queueId, id = entry.Id},QueueEntryResponse.FromEntity(entry, request.CustomerName));
     }
 }
