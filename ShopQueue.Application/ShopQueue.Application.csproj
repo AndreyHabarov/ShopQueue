@@ -10,4 +10,9 @@
       <ProjectReference Include="..\ShopQueue.Domain\ShopQueue.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.14" />
+    </ItemGroup>
+
 </Project>
