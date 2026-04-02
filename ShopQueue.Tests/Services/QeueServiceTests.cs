@@ -11,14 +11,14 @@ namespace ShopQueue.Tests.Services;
 
 public class QueueServiceTests
 {
-    private readonly Mock<IQueueRepository> _queueRepositoryMock = new();
-    private readonly Mock<IQueueEntryRepository> _queueEntryRepositoryMock = new();
-    private readonly Mock<IShopRepository> _shopRepositoryMock = new();
-    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
-    private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
     private readonly Mock<ILogger<QueueService>> _loggerMock = new();
+    private readonly Mock<IPublishEndpoint> _publishEndpointMock = new();
+    private readonly Mock<IQueueEntryRepository> _queueEntryRepositoryMock = new();
+    private readonly Mock<IQueueRepository> _queueRepositoryMock = new();
+    private readonly Mock<IShopRepository> _shopRepositoryMock = new();
 
     private readonly QueueService _sut;
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
 
     public QueueServiceTests()
     {
