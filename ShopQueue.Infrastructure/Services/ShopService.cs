@@ -20,4 +20,9 @@ public class ShopService(IShopRepository shopRepository, IUnitOfWork unitOfWork)
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return shop;
     }
+
+    public async Task<Shop?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await shopRepository.GetByIdAsync(id, cancellationToken);
+    }
 }
