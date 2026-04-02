@@ -1,4 +1,5 @@
-﻿using MassTransit;
+﻿using HealthChecks.NpgSql;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,6 +45,12 @@ public static class DependencyInjection
                 cfg.ConfigureEndpoints(context);
             });
         });
+        
+        services.AddHealthChecks()
+            .AddNpgSql(
+                configuration.GetConnectionString("DefaultConnection")!,
+                name: "postgresql",
+                tags: ["ready"]);
 
         return services;
     }
