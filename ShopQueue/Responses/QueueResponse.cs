@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using ShopQueue.Domain.Entities;
+﻿using ShopQueue.Domain.Entities;
 
 namespace ShopQueue.Responses;
 

@@ -76,4 +76,13 @@ public class QueueService(
 
         return next;
     }
+
+    public async Task<List<Queue>> GetByShopIdAsync(Guid shopId, CancellationToken cancellationToken = default)
+    {
+        var shop = await shopRepository.GetByIdAsync(shopId, cancellationToken);
+        if (shop is null)
+            throw new NotFoundException($"Shop with id {shopId} not found");
+
+        return await queueRepository.GetByShopIdAsync(shopId, cancellationToken);
+    }
 }

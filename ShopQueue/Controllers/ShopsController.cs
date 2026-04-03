@@ -34,4 +34,11 @@ public class ShopsController(IShopService shopService, IQueueService queueServic
 
         return Ok(ShopResponse.FromEntity(shop));
     }
+
+    [HttpGet("{shopId}/queues")]
+    public async Task<IActionResult> GetQueues(Guid shopId, CancellationToken cancellationToken)
+    {
+        var queues = await queueService.GetByShopIdAsync(shopId, cancellationToken);
+        return Ok(queues.Select(QueueResponse.FromEntity));
+    }
 }

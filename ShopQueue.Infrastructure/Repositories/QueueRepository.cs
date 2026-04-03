@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using ShopQueue.Application.Repositories;
 using ShopQueue.Domain.Entities;
 using ShopQueue.Infrastructure.Persistence;
@@ -14,5 +15,12 @@ public class QueueRepository(AppDbContext db) : IQueueRepository
     public async Task AddAsync(Queue queue, CancellationToken cancellationToken = default)
     {
         await db.Queues.AddAsync(queue, cancellationToken);
+    }
+
+    public async Task<List<Queue>> GetByShopIdAsync(Guid shopId, CancellationToken cancellationToken = default)
+    {
+        return await db.Queues
+            .Where(q => q.ShopId == shopId)
+            .ToListAsync(cancellationToken);
     }
 }
