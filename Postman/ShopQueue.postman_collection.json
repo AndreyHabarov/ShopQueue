@@ -1,0 +1,294 @@
+{
+  "info": {
+    "_postman_id": "d0da2c71-ac8e-47a5-bb78-457e5bf5466c",
+    "name": "ShopQueue",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34932053"
+  },
+  "item": [
+    {
+      "name": "Queues",
+      "item": [
+        {
+          "name": "GetQueue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:{{port}}/api/queues/{{queueId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "queues",
+                "{{queueId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CallNext",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:{{port}}/api/queues/{{queueId}}/call-next",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "queues",
+                "{{queueId}}",
+                "call-next"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "MarkAsServed",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:{{port}}/api/queues/{{queueId}}/entries/{{entryId}}/served",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "queues",
+                "{{queueId}}",
+                "entries",
+                "{{entryId}}",
+                "served"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CancelEntry",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:{{port}}/api/queues/{{queueId}}/entries/{{entryId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "queues",
+                "{{queueId}}",
+                "entries",
+                "{{entryId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "JoinQueue",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"customerName\": \"Мария Сидорова\",\r\n  \"customerPhone\": \"89007654321\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:{{port}}/api/queues/{{queueId}}/join",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "queues",
+                "{{queueId}}",
+                "join"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shops",
+      "item": [
+        {
+          "name": "CreateShop",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Некоторая\",\r\n  \"address\": \"ул. Прямая 75\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:{{port}}/api/shops",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "shops"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "CreateQueue",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Касса 1\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:{{port}}/api/shops/{{shopId}}/queues",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "shops",
+                "{{shopId}}",
+                "queues"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetShopById",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:{{port}}/api/shops/{{shopId}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "shops",
+                "{{shopId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetQueues",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:{{port}}/api/shops/{{shopId}}/queues",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "api",
+                "shops",
+                "{{shopId}}",
+                "queues"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "healthcheck",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5292/health/live",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5292",
+              "path": [
+                "health",
+                "live"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "healthchecksql",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:{{port}}/health/ready",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "{{port}}",
+              "path": [
+                "health",
+                "ready"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
