@@ -9,4 +9,5 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Queue> Queues => Set<Queue>();
     public DbSet<QueueEntry> QueueEntries => Set<QueueEntry>();
     public DbSet<Shop> Shops => Set<Shop>();
+    public DbSet<User> Users => Set<User>();
 }
