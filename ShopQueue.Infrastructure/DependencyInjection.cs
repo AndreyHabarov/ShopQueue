@@ -45,12 +45,15 @@ public static class DependencyInjection
                 cfg.ConfigureEndpoints(context);
             });
         });
-        
+
         services.AddHealthChecks()
             .AddNpgSql(
                 configuration.GetConnectionString("DefaultConnection")!,
                 name: "postgresql",
                 tags: ["ready"]);
+
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

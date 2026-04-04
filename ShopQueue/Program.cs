@@ -13,13 +13,15 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddPresentation();
+builder.Services.AddPresentation(builder.Configuration);
 
 var app = builder.Build();
 
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.MapHealthChecks("/health/live", new HealthCheckOptions
