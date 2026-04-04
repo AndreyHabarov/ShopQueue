@@ -9,4 +9,5 @@ public interface IQueueService
     Task<QueueEntry> CallNextAsync(Guid queueId, CancellationToken cancellationToken = default);
     Task<List<Queue>> GetByShopIdAsync(Guid shopId, CancellationToken cancellationToken = default);
     Task<QueueEntry> MarkAsServedAsync(Guid queueId, Guid entryId, CancellationToken cancellationToken = default);
+    Task CancelEntryAsync(Guid queueId, Guid entryId, CancellationToken cancellationToken = default);
 }

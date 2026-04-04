@@ -28,4 +28,11 @@ public class QueuesController(IQueueService queueService) : ControllerBase
         var entry = await queueService.MarkAsServedAsync(queueId, entryId, cancellationToken);
         return Ok(QueueEntryResponse.FromEntity(entry));
     }
+
+    [HttpDelete("{queueId}/entries/{entryId}")]
+    public async Task<IActionResult> CancelEntry(Guid queueId, Guid entryId, CancellationToken cancellationToken)
+    {
+        await queueService.CancelEntryAsync(queueId, entryId, cancellationToken);
+        return NoContent();
+    }
 }

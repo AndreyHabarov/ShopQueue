@@ -105,4 +105,22 @@ public class QueueService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return entry;
     }
+
+    public async Task CancelEntryAsync(Guid queueId, Guid entryId, CancellationToken cancellationToken = default)
+    {
+        var queue = await queueRepository.GetByIdAsync(queueId, cancellationToken);
+        if (queue is null)
+            throw new NotFoundException($"Queue with id {queueId} not found");
+
+        var entry = await queueEntryRepository.GetByIdAsync(entryId, cancellationToken);
+        if (entry is null)
+            throw new NotFoundException($"Entry with id {entryId} not found");
+
+        if (entry.Status is QueueEntryStatus.Served or QueueEntryStatus.Cancelled)
+            throw new BusinessException("Entry is already completed or cancelled");
+
+        entry.Status = QueueEntryStatus.Cancelled;
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+    }
 }
