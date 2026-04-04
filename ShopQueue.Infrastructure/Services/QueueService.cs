@@ -85,4 +85,24 @@ public class QueueService(
 
         return await queueRepository.GetByShopIdAsync(shopId, cancellationToken);
     }
+
+    public async Task<QueueEntry> MarkAsServedAsync(Guid queueId, Guid entryId,
+        CancellationToken cancellationToken = default)
+    {
+        var queue = await queueRepository.GetByIdAsync(queueId, cancellationToken);
+        if (queue is null)
+            throw new NotFoundException($"Queue with id {queueId} not found");
+
+        var entry = await queueEntryRepository.GetByIdAsync(entryId, cancellationToken);
+        if (entry is null)
+            throw new NotFoundException($"Entry with id {entryId} not found");
+
+        if (entry.Status != QueueEntryStatus.Called)
+            throw new BusinessException("Only called entries can be marked as served");
+
+        entry.Status = QueueEntryStatus.Served;
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return entry;
+    }
 }

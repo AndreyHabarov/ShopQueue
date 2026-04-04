@@ -8,4 +8,5 @@ public interface IQueueEntryRepository
     Task<List<QueueEntry>> GetWaitingAsync(Guid queueId, CancellationToken cancellationToken = default);
     Task<QueueEntry?> GetNextWaitingAsync(Guid queueId, CancellationToken cancellationToken = default);
     Task AddAsync(QueueEntry entry, CancellationToken cancellationToken = default);
+    Task<QueueEntry?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 }

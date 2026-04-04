@@ -36,4 +36,9 @@ public class QueueEntryRepository(AppDbContext db) : IQueueEntryRepository
     {
         await db.QueueEntries.AddAsync(entry, cancellationToken);
     }
+
+    public async Task<QueueEntry?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await db.QueueEntries.FindAsync([id], cancellationToken);
+    }
 }

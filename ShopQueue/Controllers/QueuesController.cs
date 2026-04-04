@@ -21,4 +21,11 @@ public class QueuesController(IQueueService queueService) : ControllerBase
         var entry = await queueService.CallNextAsync(queueId, cancellationToken);
         return Ok(QueueEntryResponse.FromEntity(entry));
     }
+
+    [HttpPatch("{queueId}/entries/{entryId}/served")]
+    public async Task<IActionResult> MarkAsServed(Guid queueId, Guid entryId, CancellationToken cancellationToken)
+    {
+        var entry = await queueService.MarkAsServedAsync(queueId, entryId, cancellationToken);
+        return Ok(QueueEntryResponse.FromEntity(entry));
+    }
 }
