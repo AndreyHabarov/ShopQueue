@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShopQueue.Application.Services;
+using ShopQueue.Domain.Enums;
 using ShopQueue.Requests;
 using ShopQueue.Responses;
 
@@ -7,6 +9,7 @@ namespace ShopQueue.Controllers;
 
 [ApiController]
 [Route("api/queues")]
+[Authorize(Roles = UserRole.Customer)]
 public class CustomersController(ICustomerService customerService) : ControllerBase
 {
     [HttpPost("{queueId}/join")]

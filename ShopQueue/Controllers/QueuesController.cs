@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShopQueue.Application.Services;
+using ShopQueue.Domain.Enums;
 using ShopQueue.Responses;
 
 namespace ShopQueue.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class QueuesController(IQueueService queueService) : ControllerBase
 {
     [HttpGet("{queueId}")]
@@ -16,6 +19,7 @@ public class QueuesController(IQueueService queueService) : ControllerBase
     }
 
     [HttpPost("{queueId}/call-next")]
+    [Authorize(Roles = UserRole.Owner)]
     public async Task<IActionResult> CallNext(Guid queueId, CancellationToken cancellationToken)
     {
         var entry = await queueService.CallNextAsync(queueId, cancellationToken);
@@ -23,6 +27,7 @@ public class QueuesController(IQueueService queueService) : ControllerBase
     }
 
     [HttpPatch("{queueId}/entries/{entryId}/served")]
+    [Authorize(Roles = UserRole.Owner)]
     public async Task<IActionResult> MarkAsServed(Guid queueId, Guid entryId, CancellationToken cancellationToken)
     {
         var entry = await queueService.MarkAsServedAsync(queueId, entryId, cancellationToken);
@@ -30,6 +35,7 @@ public class QueuesController(IQueueService queueService) : ControllerBase
     }
 
     [HttpDelete("{queueId}/entries/{entryId}")]
+    [Authorize(Roles = UserRole.Owner)]
     public async Task<IActionResult> CancelEntry(Guid queueId, Guid entryId, CancellationToken cancellationToken)
     {
         await queueService.CancelEntryAsync(queueId, entryId, cancellationToken);

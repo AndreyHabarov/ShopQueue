@@ -1,5 +1,4 @@
-﻿using HealthChecks.NpgSql;
-using MassTransit;
+﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
